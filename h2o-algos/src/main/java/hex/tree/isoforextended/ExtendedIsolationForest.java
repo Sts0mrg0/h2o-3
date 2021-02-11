@@ -116,7 +116,7 @@ public class ExtendedIsolationForest extends ModelBuilder<ExtendedIsolationFores
             ExtendedIsolationForestModel model = new ExtendedIsolationForestModel(dest(), _parms,
                     new ExtendedIsolationForestModel.ExtendedIsolationForestOutput(ExtendedIsolationForest.this));
             model.delete_and_lock(_job); // todo valenad what is it good for?
-            model._output._iTrees = new IsolationTree[_parms._ntrees];
+            model._output._iTrees = new CompressedIsolationTree[_parms._ntrees];
 
             int heightLimit = (int) Math.ceil(MathUtils.log2(_parms._sample_size));
 
@@ -127,8 +127,7 @@ public class ExtendedIsolationForest extends ModelBuilder<ExtendedIsolationFores
                 double[][] subSampleArray = FrameUtils.asDoubles(subSample);
 
                 IsolationTree isolationTree = new IsolationTree(subSampleArray, heightLimit, _parms._seed + _rand.nextInt(), _parms._extension_level, tid);
-                isolationTree.buildTree();
-                model._output._iTrees[tid] = isolationTree;
+                model._output._iTrees[tid] = isolationTree.buildTree();;
                 _job.update(1);
                 LOG.info((tid + 1) + ". tree was built in " + timer.toString() + ". Free memory: " + PrettyPrint.bytes(H2O.CLOUD.free_mem()));
             }

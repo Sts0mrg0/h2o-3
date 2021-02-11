@@ -35,9 +35,10 @@ public class IsolationTree extends Iced<IsolationTree> {
     /**
      * Implementation of Algorithm 2 (iTree) from paper.
      */
-    public void buildTree() {
+    public CompressedIsolationTree buildTree() {
         int maxNumNodesInTree = (int) Math.pow(2, _heightLimit) - 1;
         this._nodes = new Node[maxNumNodesInTree];
+        CompressedIsolationTree compressedIsolationTree = new CompressedIsolationTree(_heightLimit);
         
         _nodes[0] = new Node(_data, _data[0].length, 0);
         for (int i = 0; i < _nodes.length; i++) {
@@ -53,6 +54,7 @@ public class IsolationTree extends Iced<IsolationTree> {
                 node._numRows = nodeData[0].length;
                 node._height = currentHeight;
                 node._data = null; // attempt to inform Java GC the data are not longer needed
+                compressedIsolationTree.getNodes()[i] = new CompressedIsolationTree.CompressedNode(node);
             } else {
                 currentHeight++;
 
@@ -61,24 +63,29 @@ public class IsolationTree extends Iced<IsolationTree> {
                         nodeData.length, _seed + i, nodeData.length - _extensionLevel - 1);
 
                 FilteredData ret = extendedIsolationForestSplit(nodeData, node._p, node._n);
-
+                compressedIsolationTree.getNodes()[i] = new CompressedIsolationTree.CompressedNode(node);
                 if (rightChildIndex(i) < _nodes.length) {
                     if (ret.left != null) {
                         _nodes[leftChildIndex(i)] = new Node(ret.left, ret.left[0].length, currentHeight);
+                        compressedIsolationTree.getNodes()[leftChildIndex(i)] = new CompressedIsolationTree.CompressedNode(_nodes[leftChildIndex(i)]);
                     } else {
                         _nodes[leftChildIndex(i)] = new Node(null, 0, currentHeight);
                         _nodes[leftChildIndex(i)]._external = true;
+                        compressedIsolationTree.getNodes()[leftChildIndex(i)] = new CompressedIsolationTree.CompressedNode(_nodes[leftChildIndex(i)]);
                     }
                     if (ret.right != null) {
                         _nodes[rightChildIndex(i)] = new Node(ret.right, ret.right[0].length, currentHeight);
+                        compressedIsolationTree.getNodes()[rightChildIndex(i)] = new CompressedIsolationTree.CompressedNode(_nodes[rightChildIndex(i)]);
                     } else {
                         _nodes[rightChildIndex(i)] = new Node(null, 0, currentHeight);
                         _nodes[rightChildIndex(i)]._external = true;
+                        compressedIsolationTree.getNodes()[rightChildIndex(i)] = new CompressedIsolationTree.CompressedNode(_nodes[rightChildIndex(i)]);
                     }
                 }
                 node._data = null; // attempt to inform Java GC the data are not longer needed
             }
         }
+        return compressedIsolationTree;
     }
 
     private int leftChildIndex(int i) {
@@ -205,7 +212,7 @@ public class IsolationTree extends Iced<IsolationTree> {
      * _data should be always null after buildTree() method because only number of rows in data is needed for
      * scoring (evaluation) stage.
      */
-    private static class Node extends Iced<Node> {
+    public static class Node extends Iced<Node> {
 
         /**
          * Data in this node. After computation should be null, because only _numRows is important.
@@ -215,16 +222,16 @@ public class IsolationTree extends Iced<IsolationTree> {
         /**
          * Random slope
          */
-        private double[] _n;
+        public double[] _n;
 
         /**
          * Random intercept point
          */
-        private double[] _p;
+        public double[] _p;
 
-        private int _height;
-        private boolean _external = false;
-        private int _numRows;
+        public int _height;
+        public boolean _external = false;
+        public int _numRows;
         
         private Node _left;
         private Node _right;
