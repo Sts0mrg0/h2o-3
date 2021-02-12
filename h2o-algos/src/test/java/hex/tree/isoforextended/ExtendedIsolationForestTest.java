@@ -93,7 +93,35 @@ public class ExtendedIsolationForestTest extends TestUtil {
     }
 
     @Test
-    @Ignore("Expensive")
+//    @Ignore("Expensive")
+    public void testBasicTrainAndScoreCreditcards() {
+        try {
+            Scope.enter();
+            Frame train = Scope.track(parse_test_file("smalldata/anomaly/creditcard.csv"));
+            ExtendedIsolationForestModel.ExtendedIsolationForestParameters p =
+                    new ExtendedIsolationForestModel.ExtendedIsolationForestParameters();
+            p._train = train._key;
+            p._seed = 1234;
+            p._ntrees = 100;
+            p._sample_size = 256;
+            p._extension_level = train.numCols() - 1;
+            
+            ExtendedIsolationForest eif = new ExtendedIsolationForest(p);
+            ExtendedIsolationForestModel model = eif.trainModel().get();
+            Scope.track_generic(model);
+            assertNotNull(model);
+            
+            Frame out = model.score(train);
+            Scope.track_generic(out);
+            assertArrayEquals(new String[]{"anomaly_score", "mean_length"}, out.names());
+            assertEquals(train.numRows(), out.numRows());
+        } finally {
+            Scope.exit();
+        }
+    }
+
+    @Test
+//    @Ignore("Expensive")
     public void testBasicBigData() {
         try {
             Scope.enter();
@@ -104,7 +132,7 @@ public class ExtendedIsolationForestTest extends TestUtil {
             p._train = train._key;
             p._seed = 0xDECAF;
             p._ntrees = 100;
-            p._sample_size = 20_000;
+            p._sample_size = 30_000;
             p._extension_level = train.numCols() - 1;
 
             ExtendedIsolationForest eif = new ExtendedIsolationForest(p);
@@ -364,7 +392,7 @@ public class ExtendedIsolationForestTest extends TestUtil {
 
             long start = System.currentTimeMillis();
             IsolationTree isolationTree = new IsolationTree(FrameUtils.asDoubles(train), 9, 0xBEEF, 1, 0);
-            isolationTree.buildTree();
+            CompressedIsolationTree compressedIsolationTree = isolationTree.buildTree();
             long end = System.currentTimeMillis();
             isolationTree.logNodesNumRows();
 
@@ -373,10 +401,10 @@ public class ExtendedIsolationForestTest extends TestUtil {
                 LOG.info("Tree building took a longer than it should.");
             }
 
-            double pathLength = isolationTree.computePathLength(new double[]{0.0, 0.0}); // Normal Point
+            double pathLength = compressedIsolationTree.computePathLength(new double[]{0.0, 0.0}); // Normal Point
             assertTrue("Path length should be longer. Normal point should not be isolated close to root but is pathLength = " + pathLength, pathLength >= 4);
 
-            pathLength = isolationTree.computePathLength(new double[]{5.0, 5.0}); //Anomaly
+            pathLength = compressedIsolationTree.computePathLength(new double[]{5.0, 5.0}); //Anomaly
             assertTrue("Path length should be close to 0 (Root) but is pathLength = " + pathLength, pathLength <= 4);
 
         } finally {
@@ -545,7 +573,7 @@ public class ExtendedIsolationForestTest extends TestUtil {
     public void testSubSampleFixedSizeLarge() {
         try {
             Scope.enter();
-            Frame train = Scope.track(generate_real_only(32, 32768, 0, 0xBEEF));
+            Frame train = Scope.track(generate_real_only(32, 500_000, 0, 0xBEEF));
             Frame subSample = SamplingUtils.sampleOfFixedSize(train, 256, 0xBEEF);
             assertEquals("SubSample has different number of columns", train.numCols(), subSample.numCols());
             assertEquals("SubSample has different number of rows", 256, subSample.numRows());

@@ -10,6 +10,9 @@ import water.exceptions.H2OModelBuilderIllegalArgumentException;
 import water.fvec.Frame;
 import water.util.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -120,6 +123,7 @@ public class ExtendedIsolationForest extends ModelBuilder<ExtendedIsolationFores
 
             int heightLimit = (int) Math.ceil(MathUtils.log2(_parms._sample_size));
 
+            long modelSize = 0;
             for (int tid = 0; tid < _parms._ntrees; tid++) {
                 Timer timer = new Timer();
                 int randomUnit = _rand.nextInt();
@@ -127,10 +131,12 @@ public class ExtendedIsolationForest extends ModelBuilder<ExtendedIsolationFores
                 double[][] subSampleArray = FrameUtils.asDoubles(subSample);
 
                 IsolationTree isolationTree = new IsolationTree(subSampleArray, heightLimit, _parms._seed + _rand.nextInt(), _parms._extension_level, tid);
-                model._output._iTrees[tid] = isolationTree.buildTree();;
+                model._output._iTrees[tid] = isolationTree.buildTree();
+                modelSize = convertToBytes(model._output._iTrees[tid]).length;
                 _job.update(1);
                 LOG.info((tid + 1) + ". tree was built in " + timer.toString() + ". Free memory: " + PrettyPrint.bytes(H2O.CLOUD.free_mem()));
             }
+            LOG.info("Model size = " + PrettyPrint.bytes(modelSize));
 
             model.unlock(_job); // todo valenad what is it good for?
             model._output._model_summary = createModelSummaryTable();
@@ -160,6 +166,17 @@ public class ExtendedIsolationForest extends ModelBuilder<ExtendedIsolationFores
         table.set(row, col++, _parms._sample_size);
         table.set(row, col, _parms._extension_level);
         return table;
+    }
+    
+    private byte[] convertToBytes(Object object){
+        try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+             ObjectOutputStream out = new ObjectOutputStream(bos)) {
+            out.writeObject(object);
+            return bos.toByteArray();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return new byte[0];
     }
 
 }
