@@ -64,7 +64,7 @@ public class ExtendedIsolationForestModel extends Model<ExtendedIsolationForestM
      */
     private double anomalyScore(double pathLength) {
         return Math.pow(2, -1 * (pathLength / 
-                IsolationTree.averagePathLengthOfUnsuccessfulSearch(_output._sample_size)));
+                CompressedIsolationTree.averagePathLengthOfUnsuccessfulSearch(_output._sample_size)));
     }
 
     public static class ExtendedIsolationForestParameters extends Model.Parameters {

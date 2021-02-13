@@ -132,7 +132,7 @@ public class ExtendedIsolationForest extends ModelBuilder<ExtendedIsolationFores
 
                 IsolationTree isolationTree = new IsolationTree(subSampleArray, heightLimit, _parms._seed + _rand.nextInt(), _parms._extension_level, tid);
                 model._output._iTrees[tid] = isolationTree.buildTree();
-                modelSize = convertToBytes(model._output._iTrees[tid]).length;
+                modelSize += convertToBytes(model._output._iTrees[tid]).length;
                 _job.update(1);
                 LOG.info((tid + 1) + ". tree was built in " + timer.toString() + ". Free memory: " + PrettyPrint.bytes(H2O.CLOUD.free_mem()));
             }

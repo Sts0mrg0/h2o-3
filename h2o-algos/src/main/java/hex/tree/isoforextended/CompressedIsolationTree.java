@@ -11,14 +11,13 @@ import java.util.Arrays;
  * @author Adam Valenta
  */
 public class CompressedIsolationTree extends Iced<CompressedIsolationTree> {
-    private static final Logger LOG = Logger.getLogger(CompressedIsolationTree.class);
 
     private final AbstractCompressedNode[] _nodes;
 
     public CompressedIsolationTree(int heightLimit) {
         _nodes = new AbstractCompressedNode[(int) Math.pow(2, heightLimit) - 1];
     }
-    
+
     public AbstractCompressedNode[] getNodes() {
         return  _nodes;
     }
@@ -31,39 +30,13 @@ public class CompressedIsolationTree extends Iced<CompressedIsolationTree> {
         return 2 * i + 2;
     }
 
-//    /**
-//     * Helper method. Print nodes' size of the tree.
-//     */
-//    public void logNodesNumRows() {
-//        if (_nodes == null) {
-//            LOG.debug("Not available for buildTreeRecursive()");
-//        }
-//        StringBuilder logMessage = new StringBuilder();
-//        for (int i = 0; i < _nodes.length; i++) {
-//            if (_nodes[i] == null)
-//                logMessage.append(". ");
-//            else
-//                logMessage.append(_nodes[i]._numRows + " ");
-//        }
-//        LOG.debug(logMessage.toString());
-//    }
-    
-//    /**
-//     * Helper method. Print height (length of path from root) of each node in trees. Root is 0.
-//     */
-//    public void logNodesHeight() {
-//        if (_nodes == null) {
-//            LOG.debug("Not available for buildTreeRecursive()");
-//        }
-//        StringBuilder logMessage = new StringBuilder();
-//        for (int i = 0; i < _nodes.length; i++) {
-//            if (_nodes[i] == null)
-//                logMessage.append(". ");
-//            else
-//                logMessage.append(_nodes[i]._height + " ");
-//        }
-//        LOG.debug(logMessage.toString());
-//    }
+    private CompressedNode compressedNode(AbstractCompressedNode node) {
+        return (CompressedNode) node;
+    }
+
+    private CompressedLeaf compressedLeaf(AbstractCompressedNode node) {
+        return (CompressedLeaf) node;
+    }
 
     /**
      * Implementation of Algorithm 3 (pathLength) from paper.
@@ -72,7 +45,7 @@ public class CompressedIsolationTree extends Iced<CompressedIsolationTree> {
         int position = 0;
         AbstractCompressedNode node = _nodes[0];
         while (!(node instanceof CompressedLeaf)) {
-            CompressedNode compressedNode = (CompressedNode) node;
+            CompressedNode compressedNode = compressedNode(node);
             double mul = ArrayUtils.subAndMul(row, compressedNode._p, compressedNode._n);
             if (mul <= 0) {
                 position = leftChildIndex(position);
@@ -84,7 +57,7 @@ public class CompressedIsolationTree extends Iced<CompressedIsolationTree> {
             else
                 break;
         }
-        return node._height + averagePathLengthOfUnsuccessfulSearch(((CompressedLeaf) node)._numRows);
+        return node._height + averagePathLengthOfUnsuccessfulSearch(compressedLeaf(node)._numRows);
     }
     
     public static abstract class AbstractCompressedNode extends Iced<AbstractCompressedNode> {
@@ -94,7 +67,6 @@ public class CompressedIsolationTree extends Iced<CompressedIsolationTree> {
             _height = height;
         }
     }
-    
     
     public static class CompressedNode extends AbstractCompressedNode {
 
