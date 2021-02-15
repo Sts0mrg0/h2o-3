@@ -555,7 +555,7 @@ public class GAMModel extends Model<GAMModel, GAMModel.GAMParameters, GAMModel.G
     AddTPKnotsGamColumns addTPCols = new AddTPKnotsGamColumns(parms, zTransposeCS, zTranspose, polyBasisList, knots,
             adaptedF);
     addTPCols.addTPGamCols(gamColMeansRaw, oneOColStd); // generate thin plate regression smoothers
-    return concateGamVecs(parms, addTPCols._gamFrameKeysCenter);
+    return concateGamVecs(addTPCols._gamFrameKeysCenter);
   }
   
   public static Frame addCSGamColumns(Frame adptedF, GAMParameters parms, String[][] gamColNames,

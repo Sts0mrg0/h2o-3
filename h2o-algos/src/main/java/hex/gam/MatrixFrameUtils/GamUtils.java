@@ -309,7 +309,7 @@ public class GamUtils {
     return train;
   }
 
-  public static Frame concateGamVecs(GAMParameters parms, Key<Frame>[] gamFrameKeysCenter) {
+  public static Frame concateGamVecs(Key<Frame>[] gamFrameKeysCenter) {
     Frame gamVecs =  new Frame(Key.make());
     for (int index = 0; index < gamFrameKeysCenter.length; index++) {
       Frame tempCols = Scope.track(gamFrameKeysCenter[index].get());
