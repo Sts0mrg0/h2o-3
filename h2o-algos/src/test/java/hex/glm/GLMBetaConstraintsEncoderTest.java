@@ -63,10 +63,7 @@ public class GLMBetaConstraintsEncoderTest extends TestUtil {
             String[] coefOrigNames = new String[] {"AGE", "WEIGHT", "HEIGHT"};
 
             for (int i = 0; i < beta_constraints.length; i++) {
-                FrameUtils.BetaConstraintsEncoder constraintsEncoder = new FrameUtils.BetaConstraintsEncoder(coefNames, coefOrigNames);
-                Frame transformedFrame =  constraintsEncoder.doAll( beta_constraints[i].types(), beta_constraints[i]).outputFrame();
-                transformedFrame.setNames(beta_constraints[i]._names);
-                
+                Frame transformedFrame = FrameUtils.encodeBetaConstraints(null, coefNames, coefOrigNames, beta_constraints[i]);
                 testFramesEqual(expected_transformed_frame[i], transformedFrame);
             }
             
@@ -117,9 +114,7 @@ public class GLMBetaConstraintsEncoderTest extends TestUtil {
             String[] coefNames = new String[] {"AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL", "GLEASON"};
             String[] coefOrigNames = new String[] {"AGE", "RACE", "DPROS", "DCAPS", "PSA", "VOL"};
 
-            FrameUtils.BetaConstraintsEncoder constraintsEncoder = new FrameUtils.BetaConstraintsEncoder(coefNames, coefOrigNames);
-            Frame transformedFrame =  constraintsEncoder.doAll(beta_constraints.types(), beta_constraints).outputFrame();
-            transformedFrame.setNames(beta_constraints._names);
+            Frame transformedFrame = FrameUtils.encodeBetaConstraints(null, coefNames, coefOrigNames, beta_constraints);
             Vec namesCol = transformedFrame.vec("names");
             assert transformedFrame.vec("names").isString();
             String[] dom = new String[(int) namesCol.length()];

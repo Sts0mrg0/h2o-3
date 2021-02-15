@@ -3034,18 +3034,8 @@ public class GLM extends ModelBuilder<GLMModel,GLMParameters,GLMOutput> {
         Log.debug("_dinfo.coefNames() content: " + Arrays.toString(coefNames));
         Log.debug("_dinfo.coefOriginalNames() content: " + Arrays.toString(coefOriginalNames));
       }
-      FrameUtils.BetaConstraintsEncoder constraintsEncoder = new FrameUtils.BetaConstraintsEncoder(coefNames, coefOriginalNames);
-      Frame transformedFrame =  constraintsEncoder.doAll(getBetaConstraintsTypesForEncoder(beta_constraints), beta_constraints).outputFrame();
-      transformedFrame.setNames(beta_constraints._names);
+      Frame transformedFrame = FrameUtils.encodeBetaConstraints(null, coefNames, coefOriginalNames, beta_constraints);
       return transformedFrame;
-    }
-    
-    private byte[] getBetaConstraintsTypesForEncoder(Frame beta_constraints) {
-      byte[] types = beta_constraints.types();
-      int id = Arrays.asList(beta_constraints.names()).indexOf("names");
-      types[id] = T_STR;
-      return types;
-      
     }
 
     public BetaConstraint(Frame beta_constraints) {
